@@ -58,9 +58,13 @@ const registerUSer = asyncHandler(async (req,res)=>{
 
 const getUser = asyncHandler(async (req,res)=> {
 
+    const {_id, name, email}= await User.findById(req.user.id) //Data from authmiddleware through req.user, only id,name, and email is returned not password
 
-
-    res.status(200).json({message: "All Users Information"})
+    res.status(200).json({
+        _id: _id,
+        name,
+        email
+    })
 })
 
 //@desc   authentication of the user
@@ -79,7 +83,8 @@ const loginUser = asyncHandler(async (req,res) =>{
         res.json({
             _id: user.id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            token: generateToken(user.id)
         })
     }else{
         res.status(400)
