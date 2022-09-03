@@ -2,8 +2,6 @@ const asyncHandler = require ("express-async-handler")
 const jwt = require ("jsonwebtoken") //to genrate a token
 const bcrypt = require ("bcryptjs") // for encrypting password
 const User = require ("../models/userModel") //database schema
-const { request } = require("express")
-const { use } = require("../routes/userRoutes") 
 
 
 //@desc   POST Users
@@ -37,14 +35,15 @@ const registerUSer = asyncHandler(async (req,res)=>{
     const user = await User.create({
         name,
         email,
-        password: hashedPassword
+        password: hashedPassword //password will be stored in hashed format
     })
 
     if(user){
-        res.status(201).json({
+        res.status(201).json({              //throwing user information from backend to frontend
             _id: user.id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            token: generateToken(user.id)   //returning by calling generateToken function by passing user's id
         })
     }else{
         res.status(400)
@@ -58,6 +57,8 @@ const registerUSer = asyncHandler(async (req,res)=>{
 //@access Private
 
 const getUser = asyncHandler(async (req,res)=> {
+
+
 
     res.status(200).json({message: "All Users Information"})
 })
@@ -85,5 +86,16 @@ const loginUser = asyncHandler(async (req,res) =>{
 
         throw new Error("Invalid Credentials")
     }
+
 })
+
+//Generate Json Web Token
+
+const generateToken = (id) => {                                  //sign method takes objects that's why id is in {} 
+
+    return jwt.sign({id}, process.env.JWT_SECRET, {             //generating JWT token using passed id from line no. 46 and secret key from .env file also expiry date object 
+        expiresIn: "30d"
+    })
+}
+
 module.exports = {registerUSer,  getUser, loginUser}
